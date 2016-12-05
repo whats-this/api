@@ -1,0 +1,22 @@
+{
+  "allowedFileTypes": [
+    "audio/mpeg3",
+    "audio/x-mpeg-3",
+    "audio/mpeg3",
+    "image/jpeg",
+    "image/gif",
+    "image/png",
+    "text/plain",
+    "video/mp4",
+    "video/mpeg",
+    "video/x-mpeg"
+  ],
+  "maxFilesPerUpload": 3,
+  "maxFileSize": 83886080,
+  "textPlainExtensions": [
+    "css",
+    "html",
+    "js",
+    "txt"
+  ]
+}
