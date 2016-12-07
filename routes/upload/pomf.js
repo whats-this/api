@@ -81,7 +81,7 @@ module.exports = (req, res) => {
       file.data.push(data);
     });
     p.on('end', () => {
-      if (files.length > config.maxFilesPerUpload) {
+      if (files.length >= config.maxFilesPerUpload) {
         return res.end(400, 'Bad Request', JSON.stringify({
           success: false,
           errorcode: 400,
