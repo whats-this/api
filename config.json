@@ -9,7 +9,8 @@
     "text/plain",
     "video/mp4",
     "video/mpeg",
-    "video/x-mpeg"
+    "video/x-mpeg",
+    "video/webm"
   ],
   "maxFilesPerUpload": 3,
   "maxFileSize": 83886080,
