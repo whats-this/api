@@ -3,13 +3,19 @@
     "audio/mpeg3",
     "audio/x-mpeg-3",
     "audio/mpeg3",
+    "audio/ogg",
+    "audio/x-matroska",
     "image/jpeg",
     "image/gif",
     "image/png",
     "text/plain",
     "video/mp4",
     "video/mpeg",
-    "video/x-mpeg"
+    "video/x-mpeg",
+    "video/x-matroska",
+    "video/webm",
+    "application/pdf",
+    "application/x-sqlite"    
   ],
   "maxFilesPerUpload": 3,
   "maxFileSize": 83886080,
@@ -17,6 +23,12 @@
     "css",
     "html",
     "js",
-    "txt"
+    "txt",
+    "json",
+    "ini",
+    "yaml",
+    "raw",
+    "py",
+    "rb"
   ]
 }
