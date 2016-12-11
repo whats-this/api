@@ -4,7 +4,8 @@
 const crypto = require('crypto');
 const Dicer = require('dicer');
 const fileType = require('file-type');
-const S3 = require('../../lib/filestore.js');
+const S3 = require('../../lib/s3.js');
+const util = require('../../lib/util.js');
 
 // Load configuration
 const config = require('../../config.json');
@@ -156,14 +157,6 @@ module.exports = (req, res) => {
 };
 
 /**
- * Generate file key.
- */
-function generateFileKey (ext) {
-  let seed = String(Math.floor(Math.random() * 10) + Date.now());
-  return crypto.createHash('md5').update(seed).digest('hex').substr(2, 6) + '.' + ext;
-}
-
-/**
  * Batch upload to S3 and return an array of metadata about each object.
  * @param {object[]} files File definitions
  * @return {Promise<object[]>} Output metadata
@@ -213,46 +206,32 @@ function batchUpload (files) {
       }
 
       // Upload
-      let key = generateFileKey(type.ext);
-      putObject(key, file.data, type.mime).then(() => {
+      const key = util.generateRandomKey() + '.' + type.ext;
+      S3.putObject({
+        Bucket: `${process.env.SERVICE}-filestore-${process.env.STAGE}-1`,
+        Key: key,
+        Body: file.data,
+        ContentType: type.mime,
+        StorageClass: 'REDUCED_REDUNDANCY'
+      }, (err, data) => {
+        if (err) {
+          console.error('Failed to upload file to S3:');
+          console.error(err);
+          return push({
+            error: true,
+            name: file.filename,
+            errorcode: 500,
+            description: 'Internal server error'
+          });
+        }
+
         push({
           hash: crypto.createHash('sha1').update(file.data).digest('hex'),
           name: file.filename,
           url: key,
           size: file.data.length
         });
-      }).catch(err => {
-        console.error('Failed to upload file to S3:');
-        console.error(err);
-        push({
-          error: true,
-          name: file.filename,
-          errorcode: 500,
-          description: 'Internal server error'
-        });
       });
-    });
-  });
-}
-
-/**
- * Upload a file to S3.
- * @param {string} key
- * @param {Buffer} data
- * @param {string} type Mime type
- * @return {Promise}
- */
-function putObject (key, data, type) {
-  return new Promise((resolve, reject) => {
-    S3.putObject({
-      Bucket: process.env.SERVICE + '-filestore-' + process.env.STAGE + '-1',
-      Key: key,
-      Body: data,
-      ContentType: type,
-      StorageClass: 'REDUCED_REDUNDANCY'
-    }, (err, data) => {
-      if (err) return reject(err);
-      resolve();
     });
   });
 }

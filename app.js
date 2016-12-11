@@ -20,6 +20,7 @@ for (let env of [
 // Create a router and apply routes
 var router = new Router();
 router.use(authorize);
+router.post('/shorten/polr', require('./routes/shorten/polr.js')); // POST /shorten/polr
 router.post('/upload/pomf', require('./routes/upload/pomf.js')); // POST /upload/pomf
 
 // Create server
