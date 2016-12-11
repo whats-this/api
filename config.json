@@ -17,11 +17,13 @@
     "video/x-matroska",
     "video/webm",
     "application/pdf",
-    "application/x-sqlite"    
+    "application/x-sqlite",
+    "application/octet-stream"
   ],
   "maxFilesPerUpload": 3,
   "maxFileSize": 83886080,
   "textPlainExtensions": [
+    "8xp",
     "ahk",
     "asm",
     "c",
