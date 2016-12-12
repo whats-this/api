@@ -1,4 +1,5 @@
- "allowedFileTypes": [
+{
+  "allowedFileTypes": [
     "audio/dca",
     "audio/it",
     "audio/mid",
