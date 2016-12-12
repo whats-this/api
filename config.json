@@ -34,13 +34,13 @@
     "application/pptx",
     "application/psd",
     "application/swf",
-    "application/x-sqlite"
+    "application/x-sqlite",
     "application/xlsx",
     "font/fon",
     "font/otf",
     "font/ttf",
     "font/woff",
-    "font/woff2"
+    "font/woff2",
     "icon/icns",
     "icon/ico"
   ],
