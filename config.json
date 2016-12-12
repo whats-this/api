@@ -19,6 +19,7 @@
     "application/pdf",
     "application/x-sqlite"    
   ],
+  "linkShortenerPrefix": "https://awau.moe/",
   "maxFilesPerUpload": 3,
   "maxFileSize": 83886080,
   "textPlainExtensions": [
