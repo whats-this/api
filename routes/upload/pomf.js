@@ -3,7 +3,6 @@
 // Required modules
 const crypto = require('crypto');
 const Dicer = require('dicer');
-const fileType = require('file-type');
 const S3 = require('../../lib/s3.js');
 const util = require('../../lib/util.js');
 
@@ -121,7 +120,7 @@ module.exports = (req, res) => {
     batchUpload(files).then(data => {
       if (data.length === 0) {
         // This should've been caught above, this is a server error
-        console.error('batchUpload returned 0-length array.');
+        console.error('batchUpload returned zero-length array.');
         return res.end(500, 'Internal Server Error', JSON.stringify({
           success: false,
           errorcode: 500,
@@ -176,42 +175,12 @@ function batchUpload (files) {
 
     // Iterate through all files and upload them
     files.forEach(file => {
-      let type = fileType(file.data);
-      if (type === null || type.mime === 'text/plain') {
-        if (config.textPlainExtensions.indexOf(file.ext) > -1) {
-          type = { ext: file.ext, mime: 'text/plain' };
-        } else {
-          return push({
-            error: true,
-            name: file.filename,
-            errorcode: 400,
-            description: 'Mimetype did not match, and extension is not in text/plain whitelist'
-          });
-        }
-      } else if (file.mime.indexOf(type.mime) !== 0) {
-        return push({
-          error: true,
-          name: file.filename,
-          errorcode: 400,
-          description: 'Supplied mimetype did not match magic number mimetype'
-        });
-      }
-      if (config.allowedFileTypes.indexOf(type.mime) === -1) {
-        return push({
-          error: true,
-          name: file.filename,
-          errorcode: 415,
-          description: 'Mimetype not in whitelist'
-        });
-      }
-
-      // Upload
-      const key = util.generateRandomKey() + '.' + type.ext;
+      const key = util.generateRandomKey() + (file.ext ? '.' + file.ext : '');
       S3.putObject({
         Bucket: `${process.env.SERVICE}-filestore-${process.env.STAGE}-1`,
         Key: key,
         Body: file.data,
-        ContentType: type.mime,
+        ContentType: file.mime || 'application/octet-stream',
         StorageClass: 'REDUCED_REDUNDANCY'
       }, (err, data) => {
         if (err) {

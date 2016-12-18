@@ -1,12 +1,11 @@
 {
   "name": "owo.whats-th.is-api",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "Node.js webserver to handle API requests for owo.whats-th.is file storage server. File requests are handled via S3 and CDN.",
   "main": "app.js",
   "dependencies": {
     "aws-sdk": "^2.7.10",
-    "dicer": "^0.2.5",
-    "file-type": "^3.9.0"
+    "dicer": "^0.2.5"
   },
   "devDependencies": {
     "eslint": "^3.11.1",
