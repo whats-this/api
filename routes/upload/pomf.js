@@ -22,22 +22,22 @@ const MultipartRegex = /^multipart\/form-data; boundary=(?:"([^"]+)"|([^;]+))$/;
 /**
  * Handle multipart pomf-compatible uploads.
  */
-module.exports = (req, res) => {
+module.exports = function* () {
   let files = [];
 
   // Check the Content-Length header
-  if (req.headers['content-length'] && parseInt(req.headers['content-length']) > (config.maxFilesize * config.maxFilesPerUpload)) {
-    return res.end(413, 'Request Entity Too Large', JSON.stringify({
+  if (this.headers['content-length'] && parseInt(this.headers['content-length']) > (config.maxFilesize * config.maxFilesPerUpload)) {
+    return this.res.end(413, 'Request Entity Too Large', JSON.stringify({
       success: false,
       errorcode: 413,
       description: 'Request payload too large, must be less than ' + config.maxFilesize * config.maxFilesPerUpload + ', and each individual file must be less than ' + config.maxFilesize
-    }), () => req.destroy());
+    }), () => this.req.destroy());
   }
 
   // Check the Content-Type header
-  let contentType = MultipartRegex.exec(req.headers['content-type']);
+  let contentType = MultipartRegex.exec(this.headers['content-type']);
   if (contentType === null) {
-    return res.end(400, 'Bad Request', JSON.stringify({
+    return this.res.end(400, 'Bad Request', JSON.stringify({
       success: false,
       errorcode: 400,
       description: 'Invalid Content-Type header, must be "multipart/formdata; boundary=xxx"'
@@ -61,11 +61,11 @@ module.exports = (req, res) => {
         if (h === 'content-disposition') {
           let name = ContentDispositionNameRegex.exec(head[h][0]);
           if (name === null || name[1] !== 'files[]') {
-            return res.end(400, 'Bad Request', JSON.stringify({
+            return this.res.end(400, 'Bad Request', JSON.stringify({
               success: false,
               errorcode: 400,
               description: 'Form field name should be files[]'
-            }), () => req.destroy());
+            }), () => this.req.destroy());
           }
           let filename = ContentDispositionFilenameRegex.exec(head[h][0]);
           if (filename !== null) {
@@ -82,7 +82,7 @@ module.exports = (req, res) => {
     });
     p.on('end', () => {
       if (files.length >= config.maxFilesPerUpload) {
-        return res.end(400, 'Bad Request', JSON.stringify({
+        return this.res.end(400, 'Bad Request', JSON.stringify({
           success: false,
           errorcode: 400,
           description: 'Too many files sent in the request, the maximum permitted is ' + config.maxFilesPerUpload
@@ -90,26 +90,26 @@ module.exports = (req, res) => {
       }
       file.data = Buffer.concat(file.data);
       if (file.data.length > config.maxFilesize) {
-        return res.end(413, 'Request Entity Too Large', JSON.stringify({
+        return this.res.end(413, 'Request Entity Too Large', JSON.stringify({
           success: false,
           errorcode: 413,
           description: 'Request payload too large, must be less than ' + config.maxFilesize * config.maxFilesPerUpload + ', and each individual file must be less than ' + config.maxFilesize
-        }), () => req.destroy());
+        }), () => this.req.destroy());
       }
       files.push(file);
     });
   }).on('error', err => {
     console.error('Dicer error:');
     console.error(err);
-    return res.end(500, 'Internal Server Error', JSON.stringify({
+    return this.res.end(500, 'Internal Server Error', JSON.stringify({
       success: false,
       errorcode: 500,
       description: 'Internal server error'
     }));
   }).on('finish', () => {
-    if (res._headersSent || res.finished) return;
+    if (this.res._headersSent || this.res.finished) return;
     if (files.length === 0) {
-      return res.end(400, 'Bad Request', JSON.stringify({
+      return this.res.end(400, 'Bad Request', JSON.stringify({
         success: false,
         errorcode: 400,
         description: 'No input file(s)'
@@ -121,14 +121,14 @@ module.exports = (req, res) => {
       if (data.length === 0) {
         // This should've been caught above, this is a server error
         console.error('batchUpload returned zero-length array.');
-        return res.end(500, 'Internal Server Error', JSON.stringify({
+        return this.res.end(500, 'Internal Server Error', JSON.stringify({
           success: false,
           errorcode: 500,
           description: 'Internal server error'
         }));
       }
       if (data.length === 1 && data[0].error) {
-        return res.end(data[0].errorcode, 'Internal server error', JSON.stringify({
+        return this.res.end(data[0].errorcode, 'Internal server error', JSON.stringify({
           success: false,
           errorcode: data[0].errorcode,
           description: data[0].description
@@ -136,14 +136,14 @@ module.exports = (req, res) => {
       }
 
       // Send success response
-      res.end(200, 'OK', JSON.stringify({
+      this.res.end(200, 'OK', JSON.stringify({
         success: true,
         files: data
       }));
     }).catch(err => {
       console.error('Failed to batch upload:');
       console.error(err);
-      res.end(500, 'Internal Server Error', JSON.stringify({
+      this.res.end(500, 'Internal Server Error', JSON.stringify({
         success: false,
         errorcode: 500,
         description: 'Internal server error'
@@ -152,7 +152,7 @@ module.exports = (req, res) => {
   });
 
   // Pipe request into Dicer
-  req.pipe(d);
+  this.req.pipe(d);
 };
 
 /**

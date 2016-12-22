@@ -16,22 +16,22 @@ const UWURegex = /(?:https?:\/\/)(?:www)?(uwu.whats-th\.is|awau\.moe)/i;
 /**
  * Handle Polr link shortens.
  */
-module.exports = (req, res) => {
+module.exports = function* () {
   // Set Content-Type to text/plain
-  if (res._headersSent || res.finished) return;
-  res.setHeader('Content-Type', 'text/plain');
+  if (this.res._headersSent || this.res.finished) return;
+  this.set('Content-Type', 'text/plain');
 
   // Parse the URL
-  const urlParsed = url.parse(req.url, true);
+  const urlParsed = url.parse(this.req.url, true);
 
   // Check if the action === "shorten"
   if (urlParsed.query['action'] !== 'shorten') {
-    return res.end(400, 'Bad Request', 'invalid action, must be "shorten"');
+    return this.throw('invalid action, must be "shorten"', 400);
   }
 
   // Check the URL in the request
   if (!URLRegex.test(urlParsed.query['url']) || UWURegex.test(urlParsed.query['url'])) {
-    return res.end(400, 'Bad Request', 'invalid URL');
+    return this.throw('invalid URL', 400);
   }
 
   // Generate a key
@@ -49,10 +49,11 @@ module.exports = (req, res) => {
     if (err) {
       console.error('Failed to upload linkshortener file to S3:');
       console.error(err);
-      return res.end(500, 'Internal Server Error', 'internal server error');
+      return this.throw('internal server error', 500);
     }
 
     // Return the URL to the client
-    return res.end(200, 'OK', config.linkShortenerPrefix + key);
+    this.status = 200;
+    this.body = config.linkShortenerPrefix + key;
   });
 };

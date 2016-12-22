@@ -1,7 +1,7 @@
 // Required modules
 const authorize = require('./lib/authorize.js');
-const http = require('http');
-const Router = require('./lib/superhero.js');
+const koa = require('koa');
+const route = require('koa-route');
 
 // Check for required environment variables
 for (let env of [
@@ -17,17 +17,15 @@ for (let env of [
   }
 }
 
-// Create a router and apply routes
-var router = new Router();
-router.use(authorize);
-router.get('/shorten/polr', require('./routes/shorten/polr.js')); // GET /shorten/polr
-router.post('/upload/pomf', require('./routes/upload/pomf.js')); // POST /upload/pomf
+// Create a Koa app, and apply routes
+var app = koa();
 
-// Create server
-var server = http.createServer(router._requestListener.bind(router));
+app.use(authorize);
+app.use(route.get('/shorten/polr', require('./routes/shorten/polr.js'))); // GET /shorten/polr
+app.use(route.post('/upload/pomf', require('./routes/upload/pomf.js'))); // POST /upload/pomf
 
 // Start server
-server.listen(process.env['PORT'], () => {
+app.listen(process.env['PORT'], () => {
   // TODO: logger
   console.log('Listening on ' + process.env['PORT']);
 });
