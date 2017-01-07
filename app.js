@@ -22,6 +22,9 @@ var router = new Router();
 router.use(authorize);
 router.get('/shorten/polr', require('./routes/shorten/polr.js')); // GET /shorten/polr
 router.post('/upload/pomf', require('./routes/upload/pomf.js')); // POST /upload/pomf
+router.get('/health', function (req, res) {
+  res.end(200 'OK', '');
+});
 
 // Create server
 var server = http.createServer(router._requestListener.bind(router));
