@@ -31,5 +31,5 @@ var server = http.createServer(router._requestListener.bind(router));
 
 // Start server
 server.listen(process.env['PORT'], () => {
-  console.log('Listening on ' + process.env['PORT']);
+  console.log('Listening on ' + server.address().port);
 });
