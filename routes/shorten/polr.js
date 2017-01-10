@@ -1,7 +1,4 @@
-'use strict';
-
-// Required modules
-const S3 = require('../../lib/s3.js');
+const S3 = require('../../lib/linkS3.js');
 const url = require('url');
 const util = require('../../lib/util.js');
 
@@ -17,42 +14,33 @@ const UWURegex = /(?:https?:\/\/)(?:www)?(uwu.whats-th\.is|awau\.moe)/i;
  * Handle Polr link shortens.
  */
 module.exports = (req, res) => {
-  // Set Content-Type to text/plain
   if (res._headersSent || res.finished) return;
   res.setHeader('Content-Type', 'text/plain');
-
-  // Parse the URL
-  const urlParsed = url.parse(req.url, true);
-
-  // Check if the action === "shorten"
-  if (urlParsed.query['action'] !== 'shorten') {
-    return res.end(400, 'Bad Request', 'invalid action, must be "shorten"');
+  const query = url.parse(req.url, true).query;
+  if (query.action !== 'shorten') { // only "shorten" supported
+    return res.end(400, 'invalid action, must be "shorten"');
   }
-
-  // Check the URL in the request
-  if (!URLRegex.test(urlParsed.query['url']) || UWURegex.test(urlParsed.query['url'])) {
-    return res.end(400, 'Bad Request', 'invalid URL');
+  if (!URLRegex.test(query.url) || UWURegex.test(query.url)) {
+    return res.end(400, 'invalid URL');
   }
-
-  // Generate a key
-  const key = util.generateRandomKey();
 
   // Create the object
+  const key = util.generateRandomKey();
   S3.putObject({
-    Bucket: `${process.env.SERVICE}-linkshortener-${process.env.STAGE}-1`,
+    Bucket: process.env.S3_LINKS_BUCKET,
     Key: key,
     Body: '',
     ContentType: 'text/plain',
     StorageClass: 'REDUCED_REDUNDANCY',
-    WebsiteRedirectLocation: urlParsed.query['url']
+    WebsiteRedirectLocation: query.url
   }, (err, data) => {
     if (err) {
       console.error('Failed to upload linkshortener file to S3:');
       console.error(err);
-      return res.end(500, 'Internal Server Error', 'internal server error');
+      return res.end(500, 'internal server error');
     }
 
     // Return the URL to the client
-    return res.end(200, 'OK', config.linkShortenerPrefix + key);
+    return res.end(200, config.linkShortenerPrefix + key);
   });
 };
