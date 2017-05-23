@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Dicer = require('dicer');
-const S3 = require('../../lib/fileS3.js');
+const sw = require('../../lib/fileSeaweed');
 const util = require('../../lib/util.js');
 
 // Load configuration
@@ -175,29 +175,26 @@ function batchUpload (files) {
     // Iterate through all files and upload them
     files.forEach(file => {
       const key = util.generateRandomKey() + (file.ext ? '.' + file.ext : '');
-      S3.putObject({
-        Bucket: process.env.S3_FILES_BUCKET,
-        ACL: 'public-read',
-        Key: key,
-        Body: file.data,
-        ContentType: file.mime || 'application/octet-stream'
-      }, (err, data) => {
-        if (err) {
-          console.error('Failed to upload file to S3:');
-          console.error(err);
-          return push({
-            error: true,
-            name: file.filename,
-            errorcode: 500,
-            description: 'internal server error'
-          });
-        }
-
+      sw({
+        key,
+        contentType: file.mime || 'application/octet-stream',
+        body: file.data
+      }).then(data => {
         push({
           hash: crypto.createHash('sha1').update(file.data).digest('hex'),
           name: file.filename,
           url: key,
           size: file.data.length
+        });
+      })
+      .catch(err => {
+        console.error('Failed to upload file to S3:');
+        console.error(err);
+        return push({
+          error: true,
+          name: file.filename,
+          errorcode: 500,
+          description: 'internal server error'
         });
       });
     });
