@@ -5,10 +5,7 @@ const Router = require('./lib/superhero.js');
 // Check for required environment variables
 for (const env of [
   'DATABASE_URL',
-  'S3_FILES_ACCESS_KEY_ID',
-  'S3_FILES_SECRET_KEY',
-  'S3_FILES_BUCKET',
-  // 'S3_FILES_ENDPOINT_URL', optional
+  'SEAWEED_HOST',
   'S3_LINKS_ACCESS_KEY_ID',
   'S3_LINKS_SECRET_KEY',
   'S3_LINKS_BUCKET',
