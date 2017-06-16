@@ -41,9 +41,9 @@ module.exports = (req, res) => {
     }
 
     // Return the URL to the client
-    const resUrl = config.linkShortenerPrefix;
-    if (typeof query.resultUrl === 'string' && query.resultUrl[query.resultUrl.length - 1] === '/') {
-      resUrl = query.resultUrl + '/';
+    let resUrl = config.linkShortenerPrefix;
+    if (typeof query.resultUrl === 'string') {
+      resUrl = query.resultUrl[query.resultUrl.length - 1] === '/' ? query.resultUrl : query.resultUrl + '/';
     }
     return res.end(200, resUrl + key);
   });
