@@ -41,10 +41,10 @@ module.exports = (req, res) => {
     }
 
     // Return the URL to the client
-    const res = config.linkShortenerPrefix;
+    const resUrl = config.linkShortenerPrefix;
     if (typeof query.resultUrl === 'string' && query.resultUrl[query.resultUrl.length - 1] === '/') {
-      res = query.resultUrl + '/';
+      resUrl = query.resultUrl + '/';
     }
-    return res.end(200, res + key);
+    return res.end(200, resUrl + key);
   });
 };
