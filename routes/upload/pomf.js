@@ -8,7 +8,7 @@ const config = require('../../config.json');
 
 // Create regexes
 // Content-Disposition filename regex: "filename=xxx"
-const ContentDispositionFilenameRegex = /filename=(?:"([^"]+)"|([^;]+))/;
+const ContentDispositionFilenameRegex = /filename=(?:("([^"]+)"|([^;"]+)))/;
 // Content-Disposition name regex: "name=xxx"
 const ContentDispositionNameRegex = /[^e]name=(?:"([^"]+)"|([^;]+))/;
 // Filename regex
@@ -67,8 +67,8 @@ module.exports = (req, res) => {
           }
           let filename = ContentDispositionFilenameRegex.exec(head[h][0]);
           if (filename !== null) {
-            file.filename = filename[1];
-            let ext = FilenameRegex.exec(filename[1]);
+            file.filename = filename[2];
+            let ext = FilenameRegex.exec(filename[2]);
             if (ext !== null) file.ext = ext[1].toLowerCase();
           }
         }
