@@ -1,6 +1,6 @@
 const url = require('url');
 const util = require('../../lib/util.js');
-const db = require('../lib/database.js');
+const db = require('../../lib/database.js');
 
 // Load configuration
 const config = require('../../config.json');
