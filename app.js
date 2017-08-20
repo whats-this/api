@@ -6,9 +6,6 @@ const Router = require('./lib/superhero.js');
 for (const env of [
   'DATABASE_URL',
   'SEAWEED_HOST',
-  'S3_LINKS_ACCESS_KEY_ID',
-  'S3_LINKS_SECRET_KEY',
-  'S3_LINKS_BUCKET',
   'PORT'
 ]) {
   if (!process.env.hasOwnProperty(env)) {

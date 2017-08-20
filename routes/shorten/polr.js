@@ -1,6 +1,6 @@
-const S3 = require('../../lib/linkS3.js');
 const url = require('url');
 const util = require('../../lib/util.js');
+const db = require('../lib/database.js');
 
 // Load configuration
 const config = require('../../config.json');
@@ -26,25 +26,15 @@ module.exports = (req, res) => {
 
   // Create the object
   const key = util.generateRandomKey();
-  S3.putObject({
-    Bucket: process.env.S3_LINKS_BUCKET,
-    Key: key,
-    Body: '',
-    ContentType: 'text/plain',
-    StorageClass: 'REDUCED_REDUNDANCY',
-    WebsiteRedirectLocation: query.url
-  }, (err, data) => {
-    if (err) {
-      console.error('Failed to upload linkshortener file to S3:');
-      console.error(err);
-      return res.end(500, 'internal server error');
-    }
-
-    // Return the URL to the client
+  db.query('INSERT INTO objects (bucket_key, bucket, key, dir, type, dest_url, content_type) VALUES ($1, \'public\', $2, \'/\', 1, $3, NULL)', ['public/' + key, '/' + key, query.url]).then(data => {
     let resUrl = config.linkShortenerPrefix;
     if (typeof query.resultUrl === 'string') {
       resUrl = query.resultUrl[query.resultUrl.length - 1] === '/' ? query.resultUrl : query.resultUrl + '/';
     }
     return res.end(200, resUrl + key);
+  }).catch(err => {
+    console.error('Failed to process database query');
+    console.error(err);
+    return res.end(500, 'internal server error');
   });
 };

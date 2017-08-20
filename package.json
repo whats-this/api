@@ -4,7 +4,6 @@
   "description": "Node.js webserver to handle API requests for whats-th.is.",
   "main": "app.js",
   "dependencies": {
-    "aws-sdk": "^2.7.10",
     "dicer": "^0.2.5",
     "form-data": "^2.1.4",
     "pg": "^6.1.2",
