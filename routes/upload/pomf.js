@@ -16,6 +16,10 @@ const FilenameRegex = /^(?:^.*)?\.([a-z0-9_-]+)$/i;
 // Multipart Content-Type regex: "multipart/formdata; boundary=xxx"
 const MultipartRegex = /^multipart\/form-data; boundary=(?:"([^"]+)"|([^;]+))$/;
 
+function genKey (file) {
+  return util.generateRandomKey() + (file.ext ? '.' + file.ext : '');
+}
+
 /**
  * Handle multipart pomf-compatible uploads.
  */
@@ -174,29 +178,36 @@ function batchUpload (files) {
 
     // Iterate through all files and upload them
     files.forEach(file => {
-      const key = util.generateRandomKey() + (file.ext ? '.' + file.ext : '');
-      sw({
-        key,
-        contentType: file.mime || 'application/octet-stream',
-        body: file.data
-      }).then(data => {
-        push({
-          hash: crypto.createHash('sha1').update(file.data).digest('hex'),
-          name: file.filename,
-          url: key,
-          size: file.data.length
+      function createWithKey (key) {
+        sw({
+          key,
+          contentType: file.mime || 'application/octet-stream',
+          body: file.data
+        }).then(data => {
+          push({
+            hash: crypto.createHash('sha1').update(file.data).digest('hex'),
+            name: file.filename,
+            url: key,
+            size: file.data.length
+          });
+        })
+        .catch(err => {
+          if (err && err.code === '23505') {
+            // key clash
+            createWithKey(genKey(file));
+            return;
+          }
+          console.error('Failed to upload file to S3:');
+          console.error(err);
+          return push({
+            error: true,
+            name: file.filename,
+            errorcode: 500,
+            description: 'internal server error'
+          });
         });
-      })
-      .catch(err => {
-        console.error('Failed to upload file to S3:');
-        console.error(err);
-        return push({
-          error: true,
-          name: file.filename,
-          errorcode: 500,
-          description: 'internal server error'
-        });
-      });
+      }
+      createWithKey(genKey(file));
     });
   });
 }

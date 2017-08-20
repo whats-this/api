@@ -25,16 +25,22 @@ module.exports = (req, res) => {
   }
 
   // Create the object
-  const key = util.generateRandomKey();
-  db.query('INSERT INTO objects (bucket_key, bucket, key, dir, type, dest_url, content_type) VALUES ($1, \'public\', $2, \'/\', 1, $3, NULL)', ['public/' + key, '/' + key, query.url]).then(data => {
-    let resUrl = config.linkShortenerPrefix;
-    if (typeof query.resultUrl === 'string') {
-      resUrl = query.resultUrl[query.resultUrl.length - 1] === '/' ? query.resultUrl : query.resultUrl + '/';
-    }
-    return res.end(200, resUrl + key);
-  }).catch(err => {
-    console.error('Failed to process database query');
-    console.error(err);
-    return res.end(500, 'internal server error');
-  });
+  function createWithKey (key) {
+    db.query('INSERT INTO objects (bucket_key, bucket, key, dir, type, dest_url, content_type) VALUES ($1, \'public\', $2, \'/\', 1, $3, NULL)', ['public/' + key, '/' + key, query.url]).then(data => {
+      let resUrl = config.linkShortenerPrefix;
+      if (typeof query.resultUrl === 'string') {
+        resUrl = query.resultUrl[query.resultUrl.length - 1] === '/' ? query.resultUrl : query.resultUrl + '/';
+      }
+      return res.end(200, resUrl + key);
+    }).catch(err => {
+      if (err && err.code === '23505') {
+        createWithKey(util.generateRandomKey());
+        return;
+      }
+      console.error('Failed to process database query');
+      console.error(err);
+      return res.end(500, 'internal server error');
+    });
+  }
+  createWithKey(util.generateRandomKey());
 };
