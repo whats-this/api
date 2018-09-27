@@ -1,7 +1,5 @@
 # OwO.Whats-Th.is?
-A Pomf-compatible Node.js image sharing platform running on AWS' infrastructure.
-Uses S3 and DynamoDB in order to reduce costs and provide a highly-available
-service.
+A Pomf-compatible Node.js image sharing platform. Uses SeaweedFS and Postgres.
 
 # Contributing
 1. Fork & clone
