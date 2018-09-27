@@ -8,5 +8,5 @@ module.exports = (req, res) => {
       is_admin: req.isAdmin,
       username: req.username
     }
-  });
-}
+  }));
+};
